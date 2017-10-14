@@ -35,7 +35,9 @@ def determine_turn(turn, observation_n, j, total_sum, prev_total_sum, reward_n):
 def main():
 
     #init environment
-    env = gym.make('flashgames.CoasterRacer-v0')
+
+    # 'flashgames.CoasterRacer-v0'
+    env = gym.make('flashgames.NeonRace-v0')
     env.configure(remotes=1)
     observation_n = env.reset()
 
@@ -59,34 +61,35 @@ def main():
         #increment a counter for number of iterations
         n+=1
 
-        # #if at least one iteration is made, check if turn is needed
-        # if(n > 1):
-        #     #if at least one iteration, check if a turn
-        #     if(observation_n[0] != None):
-        #         #store the reward in the previous score
-        #         prev_score = reward_n[0]
-        #
-        #         #should we turn?
-        #         if(turn):
-        #             #pick a random event
-        #             #where to turn?
-        #             event = random.choice([left,right])
-        #             #perform an action
-        #             action_n = [event for ob in observation_n]
-        #             #set turn to false
-        #             turn = False
-        #
-        # elif(~turn):
-        #     #if no turn is needed, go straight
-        #     action_n = [Forward for ob in observation_n]
-        #
-        #
-        # #if there is an obseravtion, game has started, check if turn needed
-        # if(observation_n[0] != None):
-        #     turn, j, total_sum, prev_total_sum = determine_turn(turn, observation_n[0], j, total_sum, prev_total_sum, reward_n[0])
+        #if at least one iteration is made, check if turn is needed
+        if(n > 1):
+            #if at least one iteration, check if a turn
+            if(observation_n[0] != None):
+                #store the reward in the previous score
+                prev_score = reward_n[0]
+
+                #should we turn?
+                if(turn):
+                    #pick a random event
+                    #where to turn?
+                    event = random.choice([left,right])
+                    #perform an action
+                    action_n = [event for ob in observation_n]
+                    #set turn to false
+                    turn = False
+
+        elif(~turn):
+            #if no turn is needed, go straight
+            action_n = [Forward for ob in observation_n]
+
+
+        #if there is an obseravtion, game has started, check if turn needed
+        if(observation_n[0] != None):
+            turn, j, total_sum, prev_total_sum = determine_turn(turn, observation_n[0], j, total_sum, prev_total_sum, reward_n[0])
 
         #save new variables for each iteration
-        observation_n, reward_n, done_n, info = env.step(right)
+        print(action_n)
+        observation_n, reward_n, done_n, info = env.step(action_n)
 
         env.render()
 
