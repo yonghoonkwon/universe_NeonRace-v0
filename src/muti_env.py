@@ -275,25 +275,19 @@ class Environment(threading.Thread):
             if self.render:
                 self.env.render()
 
-            # if s[0] == None:
-            #     print("hi")
-            #     s, r, done, info = self.env.step([])
-            #     continue
-
             # a = self.agent.act(s)
             # a = 1
             # event_map = ['Forward', 'left', 'right']
             # event = event_map[a]
             # action_n = [event for ob in s]
-            # action_n = [[('KeyEvent', 'ArrowUp', True)] for ob in s]
-            print(action_n)
 
-            #ACTIONS[a]
-            s_, r, done, info = self.env.step([[('KeyEvent', 'ArrowUp', True)] ])
-            if (s[0] == None ):
+            a = 2
+            action_n = [ACTIONS[a] for ob in s]
+            s_, r, done, info = self.env.step(action_n)
+            if (s[0] == None):
                 continue
 
-            # s_ = crop_screen(s_)
+            s_ = crop_screen(s_)
 
             # terminal state
             if done:
