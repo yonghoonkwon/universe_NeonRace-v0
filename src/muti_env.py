@@ -20,13 +20,13 @@ from keras.layers import *
 from keras import backend as K
 
 logger = logging.getLogger()
-
-ENV = 'flashgames.NeonRace-v0'
+# 'flashgames.NeonRace-v0' 'flashgames.YummyyummyMonsterShooter-v0' #'flashgames.3FootNinja-v0'# 'flashgames.CoasterRacer-v0' #
+ENV = 'flashgames.NeonRace-v0'  # 'flashgames.SuperCarRacing-v0'  # 'flashgames.V8RacingChampion-v0' # 'flashgames.3dSpeedFever-v0'
 THREAD_DELAY = 0.001
 THREADS = 2
 OPTIMIZERS = 1
 
-RUN_TIME = 60
+RUN_TIME = 600
 EPS_START = 0.4
 EPS_STOP = .15
 EPS_STEPS = 75000
@@ -42,13 +42,11 @@ NUM_STATE = [396, 622, 3]
 left = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
 right = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', True)]
 Forward = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False)]
-
 ACTIONS = [left, right, Forward]
 
 
 def crop_screen(screen):
-
-    print(screen.size)
+    # print(screen.shape)
     return screen[84:NUM_STATE[0], 18:NUM_STATE[1], :]
 
 
@@ -275,51 +273,35 @@ class Environment(threading.Thread):
             if self.render:
                 self.env.render()
 
-            # a = self.agent.act(s)
-            # a = 1
-            # event_map = ['Forward', 'left', 'right']
-            # event = event_map[a]
-            # action_n = [event for ob in s]
-
             a = 2
-            action_n = [ACTIONS[a] for ob in s]
-            s_, r, done, info = self.env.step(action_n)
-            if (s[0] == None):
+            # action_n = [ for ob in s]
+            # print(action_n)
+            s_, r, done, info = self.env.step([ACTIONS[a]])
+            if (s_[0] == None):
                 continue
 
-            s_ = crop_screen(s_)
+            s_ = crop_screen(s_[0]['vision'])
+            # print(done)
+
 
             # terminal state
-            if done:
+            if done[0]:
                 s_ = None
-
-            # self.agent.train(s, a, r, s_)
-
-            s = s_
-            R += r
-
-            if done:
                 print(done, "restart ")
                 self.env.reset()
                 break
 
             if self.stop_signal:
+                print("stop signal")
                 break
-            #
-            # a = self.agent.act(s)
-            # s_, r, done, info = self.env.step(a)
-            # s_ = crop_screen(s_)
-            #
-            # if done:  # terminal state
-            #     s_ = None
-            #
-            # self.agent.train(s, a, r, s_)
-            #
-            # s = s_
-            # R += r
-            # if done:
-            #     print("dead")
 
+
+
+            # self.agent.train(s, a, r, s_)
+            print(r, done)
+
+            s = s_
+            R += r[0]
 
         print("Total R:", R)
 
