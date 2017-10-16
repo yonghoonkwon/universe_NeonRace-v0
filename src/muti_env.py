@@ -97,7 +97,7 @@ class Brain:
         print("b4 flattern", x._keras_shape)
         x = TimeDistributed(Flatten(name='flatten'))(x)
         x = TimeDistributed(Dense(256, activation='elu', name='fc', name="lstm_1"))(x)
-        x = Dropout(0.5)(x)
+        x = TimeDistributed(Dropout(0.5))(x)
         x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256)))(x)        
         out_actions = TimeDistributed(Dense(self.action_space, activation='softmax'))(x)
         out_values = TimeDistributed(Dense(1, activation='linear'))(x)
