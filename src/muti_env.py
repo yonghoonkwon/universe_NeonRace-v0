@@ -45,6 +45,7 @@ N_STEP_RETURN = 8
 GAMMA_N = GAMMA ** N_STEP_RETURN
 NUM_STATE = [251, 622, 3]
 INPUT_IMG = [126, 311, 6]
+NONE_IMG = np.zeros([126, 311, 3])
 NONE_STATE = np.zeros(INPUT_IMG)
 
 left = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
@@ -340,7 +341,15 @@ class Environment(threading.Thread):
                 print("stop signal")
                 break
 
-            self.agent.train(s, a, r[0], np.dstack([s, s_]))
+            tmp_s = s 
+            tmp_s_ = s_ 
+            if s == None:
+                tmp_s = NONE_IMG
+            if s_ == None:
+                tmp_s_ = NONE_IMG
+
+            
+            self.agent.train(s, a, r[0], np.dstack([tmp_s, tmp_s_]))
             # print(r, done)
 
             s = s_
