@@ -98,7 +98,7 @@ class Brain:
         x = Flatten(name='flatten')(x)
         x = Dense(256, activation='elu', name='fc')(x)
         x = Dropout(0.5)(x)
-        x = LSTM(256)(x)        
+        x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim = 256)(x)        
         out_actions = Dense(self.action_space, activation='softmax')(x)
         out_values = Dense(1, activation='linear')(x)
 
