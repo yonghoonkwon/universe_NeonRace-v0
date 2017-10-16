@@ -44,7 +44,7 @@ GAMMA = 0.99
 N_STEP_RETURN = 8
 GAMMA_N = GAMMA ** N_STEP_RETURN
 NUM_STATE = [251, 622, 3]
-INPUT_IMG = [84, 206, 3]
+INPUT_IMG = [84, 206, 6]
 NONE_STATE = np.zeros(INPUT_IMG)
 
 left = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
@@ -87,21 +87,27 @@ class Brain:
     def _build_model(self):
         l_input = Input(batch_shape=(None, self.state_size[0], self.state_size[1], self.state_size[2]))
 
-        x = Conv2D(16, (8, 8), strides=(4, 4), activation='elu', padding='same', name='conv_1')(l_input)
+        x = Conv2D(16, (4, 4), strides=(4, 4), activation='elu', padding='same', name='conv_1')(l_input)
         x = Dropout(0.5)(x)
-        x = MaxPool2D((5, 5), strides=(2, 2), name="max_pool_1")(x)
-        x = Conv2D(32, (4, 4), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
+        x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
+        x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
         print("conv_2", x._keras_shape)
         x = Dropout(0.5)(x)
-        x = MaxPool2D((3, 3), strides=(2, 2), name="max_pool_2")(x)
-        print("b4 flattern", x._keras_shape)
-        x = Flatten(name='flatten')(x)
-        print("Flatten(name='flatten')(x)", x._keras_shape)
-        x = Reshape(list(x._keras_shape).insert(0, 0))
-        # x = Dense(256, activation='elu', name='fc')(x)
+        x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
+        x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_3')(x)
+        print("conv_2", x._keras_shape)
         x = Dropout(0.5)(x)
-        x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256), name="lstm_1")(x)      
-        x = Reshape(list(x._keras_shape).pop(0))  
+        x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_3")(x)
+        print("conv_3", x._keras_shape)
+        x = Flatten(name='flatten')(x)
+        
+        # print("b4 flattern", x._keras_shape)
+        # x = Flatten(name='flatten')(x)
+        # print("Flatten(name='flatten')(x)", x._keras_shape)
+        # x = Reshape(list(x._keras_shape).insert(0, 0))
+        # x = Dropout(0.5)(x)
+        # x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256), name="lstm_1")(x)      
+        # x = Reshape(list(x._keras_shape).pop(0))  
         out_actions = Dense(self.action_space, activation='softmax')(x)
         out_values = Dense(1, activation='linear')(x)
 
@@ -334,8 +340,7 @@ class Environment(threading.Thread):
                 print("stop signal")
                 break
 
-
-            self.agent.train(s, a, r[0], s_)
+            self.agent.train(s, a, r[0], np.dstack([s, s_]))
             # print(r, done)
 
             s = s_
