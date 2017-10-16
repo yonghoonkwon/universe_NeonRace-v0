@@ -47,11 +47,11 @@ NUM_STATE = [251, 622, 3]
 INPUT_IMG = [84, 206, 3]
 NONE_STATE = np.zeros(INPUT_IMG)
 
-left = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
-right = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', True)]
+left = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
+right = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', True)]
 Forward = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False)]
-None_key = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False)]
-ACTIONS = [left, right, Forward, None_key]
+ACTIONS = [left, right, Forward]
+nb_actions = len(ACTIONS)
 
 frames = 0
 
@@ -67,7 +67,7 @@ class Brain:
     train_queue = [[], [], [], [], []]  # s, a, r, s', terminal
     lock_queue = threading.Lock()
 
-    def __init__(self, state_size=INPUT_IMG, action_space=4):
+    def __init__(self, state_size=INPUT_IMG, action_space=nb_actions):
         self.session = tf.Session()
         self.state_size = state_size
         self.action_space = action_space
@@ -205,7 +205,7 @@ class Brain:
 
 
 class Agent:
-    def __init__(self, eps_start, eps_end, eps_step, nb_actions=4):
+    def __init__(self, eps_start, eps_end, eps_step, nb_actions=nb_actions):
         self.eps_start = eps_start
         self.eps_end = eps_end
         self.eps_step = eps_step
@@ -275,7 +275,7 @@ class Environment(threading.Thread):
 
     stop_signal = False
 
-    def __init__(self, render=True, eps_start=EPS_START, eps_end=EPS_STOP, eps_steps=EPS_STEPS, nb_actions=4):
+    def __init__(self, render=False, eps_start=EPS_START, eps_end=EPS_STOP, eps_steps=EPS_STEPS, nb_actions=nb_actions):
         threading.Thread.__init__(self)
 
         self.render = render
