@@ -347,7 +347,7 @@ class Environment(threading.Thread):
             if(s_ != None):
                 s_ = np.dstack([last_frame, cur_img])
             
-            self.agent.train(s, a, r[0], s_))
+            self.agent.train(s, a, r[0], s_)
             # print(r, done)
 
             s = s_
