@@ -300,6 +300,7 @@ class Environment(threading.Thread):
 
     def runEpisode(self):
         s = self.env.reset()[0]
+        last_frame = NONE_IMG
 
         R = 0
         start = time.time()
@@ -341,19 +342,17 @@ class Environment(threading.Thread):
                 print("stop signal")
                 break
 
-            tmp_s = s 
-            tmp_s_ = s_ 
-            if s == None:
-                tmp_s = NONE_IMG
-            if s_ == None:
-                tmp_s_ = NONE_IMG
+            cur_img = s_
 
+            if(s_ != None):
+                s_ = np.dstack([last_frame, cur_img]
             
-            self.agent.train(s, a, r[0], np.dstack([tmp_s, tmp_s_]))
+            self.agent.train(s, a, r[0], s_))
             # print(r, done)
 
             s = s_
             R += r[0]
+            last_frame = cur_img
 
         with open(LOG_FILE_NAME,'a') as f:
             f.write(str(R)+"\n")
