@@ -87,7 +87,7 @@ class Brain:
     def _build_model(self):
         l_input = Input(batch_shape=(None, self.state_size[0], self.state_size[1], self.state_size[2]))
 
-        x = TimeDistributed(Conv2D(16, (8, 8), strides=(4, 4), activation='elu', padding='same', name='conv_1')))(l_input)
+        x = TimeDistributed(Conv2D(16, (8, 8), strides=(4, 4), activation='elu', padding='same', name='conv_1'))(l_input)
         x = TimeDistributed(Dropout(0.5))(x)
         x = TimeDistributed(MaxPool2D((5, 5), strides=(2, 2), name="max_pool_1"))(x)
         x = TimeDistributed(Conv2D(32, (4, 4), strides=(2, 2), activation='elu', padding='same', name='conv_2'))(x)
@@ -98,7 +98,7 @@ class Brain:
         x = TimeDistributed(Flatten(name='flatten'))(x)
         x = TimeDistributed(Dense(256, activation='elu', name='fc', name="lstm_1"))(x)
         x = TimeDistributed(Dropout(0.5))(x)
-        x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256)))(x)        
+        x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256))(x)        
         out_actions = TimeDistributed(Dense(self.action_space, activation='softmax'))(x)
         out_values = TimeDistributed(Dense(1, activation='linear'))(x)
 
