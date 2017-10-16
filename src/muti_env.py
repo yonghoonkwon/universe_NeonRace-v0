@@ -96,11 +96,11 @@ class Brain:
         x = MaxPool2D((3, 3), strides=(2, 2), name="max_pool_2")(x)
         print("b4 flattern", x._keras_shape)
         x = Flatten(name='flatten')(x)
-        x = Reshape(x._keras_shape.insert(0, 0))
+        x = Reshape(list(x._keras_shape).insert(0, 0))
         # x = Dense(256, activation='elu', name='fc')(x)
         x = Dropout(0.5)(x)
         x = LSTM(256, recurrent_dropout=0.0, activation='elu', input_dim =(1,256), name="lstm_1")(x)      
-        x = Reshape(x._keras_shape.pop(0))  
+        x = Reshape(list(x._keras_shape).pop(0))  
         out_actions = Dense(self.action_space, activation='softmax')(x)
         out_values = Dense(1, activation='linear')(x)
 
