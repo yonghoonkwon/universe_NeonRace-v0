@@ -92,7 +92,7 @@ class Brain:
         x = TimeDistributed(MaxPool2D((5, 5), strides=(2, 2), name="max_pool_1"))(x)
         x = TimeDistributed(Conv2D(32, (4, 4), strides=(2, 2), activation='elu', padding='same', name='conv_2'))(x)
         print("conv_2", x._keras_shape)
-        x = TimeDistributed(Dropout(0.5)(x)
+        x = TimeDistributed(Dropout(0.5))(x)
         x = TimeDistributed(MaxPool2D((3, 3), strides=(2, 2), name="max_pool_2"))(x)
         print("b4 flattern", x._keras_shape)
         x = TimeDistributed(Flatten(name='flatten'))(x)
