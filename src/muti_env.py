@@ -96,13 +96,9 @@ class Brain:
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
         print("conv_2", x._keras_shape)
         x = Dropout(0.5)(x)
-        x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
-        print("max_pool_2", x._keras_shape)
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_3')(x)
         print("conv_3", x._keras_shape)
         x = Dropout(0.5)(x)
-        x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_3")(x)
-        print("max_pool_3", x._keras_shape)
         x = Flatten(name='flatten')(x)
         
         # print("b4 flattern", x._keras_shape)
