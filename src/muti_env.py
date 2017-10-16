@@ -44,7 +44,7 @@ GAMMA = 0.99
 N_STEP_RETURN = 8
 GAMMA_N = GAMMA ** N_STEP_RETURN
 NUM_STATE = [251, 622, 3]
-INPUT_IMG = [84, 206, 6]
+INPUT_IMG = [126, 311, 6]
 NONE_STATE = np.zeros(INPUT_IMG)
 
 left = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
