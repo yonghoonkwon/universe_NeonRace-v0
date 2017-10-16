@@ -87,18 +87,22 @@ class Brain:
     def _build_model(self):
         l_input = Input(batch_shape=(None, self.state_size[0], self.state_size[1], self.state_size[2]))
 
-        x = Conv2D(16, (4, 4), strides=(4, 4), activation='elu', padding='same', name='conv_1')(l_input)
+        x = Conv2D(16, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_1')(l_input)
+        print("conv_1", x._keras_shape)
         x = Dropout(0.5)(x)
         x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
+        print("max_pool_1", x._keras_shape)
+
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
         print("conv_2", x._keras_shape)
         x = Dropout(0.5)(x)
         x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
+        print("max_pool_2", x._keras_shape)
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_3')(x)
-        print("conv_2", x._keras_shape)
+        print("conv_3", x._keras_shape)
         x = Dropout(0.5)(x)
         x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_3")(x)
-        print("conv_3", x._keras_shape)
+        print("max_pool_3", x._keras_shape)
         x = Flatten(name='flatten')(x)
         
         # print("b4 flattern", x._keras_shape)
