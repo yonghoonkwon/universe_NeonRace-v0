@@ -87,13 +87,18 @@ class Brain:
     def _build_model(self):
         l_input = Input(batch_shape=(None, self.state_size[0], self.state_size[1], self.state_size[2]))
 
-        x = Conv2D(32, (3, 3), activation='relu', padding='same', name='conv_1')(l_input)
+        x = Conv2D(16, (8, 8), strides=(4, 4), activation='elu', padding='same', name='conv_1')(l_input)
+        x = Dropout(0.5)(x)
         x = MaxPool2D((5, 5), strides=(2, 2), name="max_pool_1")(x)
-        x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv_2')(x)
+        x = Conv2D(32, (4, 4), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
+        print("conv_2", x._keras_shape)
+        x = Dropout(0.5)(x)
         x = MaxPool2D((3, 3), strides=(2, 2), name="max_pool_2")(x)
+        print("b4 flattern", x._keras_shape)
         x = Flatten(name='flatten')(x)
-        x = Dense(1028, activation='relu', name='fc1')(x)
-        x = Dense(128, activation='relu', name='fc2')(x)
+        x = Dense(256, activation='elu', name='fc')(x)
+        x = Dropout(0.5)(x)
+        x = LSTM(256)(x)        
         out_actions = Dense(self.action_space, activation='softmax')(x)
         out_values = Dense(1, activation='linear')(x)
 
@@ -291,21 +296,9 @@ class Environment(threading.Thread):
         while True:
             time.sleep(THREAD_DELAY)  # yield
 
-            # action_n = [self.env.action_space.sample() for ob in observation_n]
-            # print(action_n)
-            # observation_n, reward_n, done_n, info = self.env.step(action_n)
-
-            # if (observation_n[0] != None):
-            #     print(observation_n[0])
-            #     state = observation_n[0]['vision']
-            #     # cv2.imshow('image', state)
-            #     # plt.imshow(state)
-            #     cv2.imwrite('my.jpg', state[84:height, 18:width, :])
-            #     break;
             if self.render:
                 self.env.render()
 
-            a = 2
             if (s != None):
                 a = self.agent.act(s)
             else:
