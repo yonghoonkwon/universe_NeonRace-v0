@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-import gc
+
 import cv2
 import matplotlib.pyplot as plt
 import gym
@@ -21,19 +21,16 @@ from keras.models import load_model
 
 logger = logging.getLogger()
 # 'flashgames.NeonRace-v0' 'flashgames.YummyyummyMonsterShooter-v0' #'flashgames.3FootNinja-v0'# 'flashgames.CoasterRacer-v0' #
-ENV = 'flashgames.NeonRaceLvl3-v0'  # 'flashgames.SuperCarRacing-v0'  # 'flashgames.V8RacingChampion-v0' # 'flashgames.3dSpeedFever-v0'
+ENV = 'flashgames.NeonRace-v0'  # 'flashgames.SuperCarRacing-v0'  # 'flashgames.V8RacingChampion-v0' # 'flashgames.3dSpeedFever-v0'
 THREAD_DELAY = 0.001
-THREADS = 7
+THREADS = 4
 OPTIMIZERS = 2
 LOG_FILE_NAME = str(random.randrange(10,1000))+"_reward.log"
 
-RUN_TIME = 7200
-
-FPS = 10.0
-
+RUN_TIME = 21600
 EPS_START = 0.5
 EPS_STOP = 0.05
-EPS_STEPS = FPS * RUN_TIME * 1.05
+EPS_STEPS = 375000
 
 
 # EPS_START = 0.000001
@@ -44,32 +41,25 @@ LEARNING_RATE = 0.005
 MINI_BATCH_SIZE = 32
 
 GAMMA = 0.99
-N_STEP_RETURN = 20
+N_STEP_RETURN = 8
 GAMMA_N = GAMMA ** N_STEP_RETURN
 NUM_STATE = [251, 622, 3]
 INPUT_IMG = [126, 311, 6]
-NONE_IMG = np.zeros([126, 311, 3])
 NONE_STATE = np.zeros(INPUT_IMG)
 
 left = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
 right = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', True)]
 Forward = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False)]
-ForwardL = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', True), ('KeyEvent', 'ArrowRight', False)]
-ForwardR = [('KeyEvent', 'ArrowUp', True), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', True)]
-# down = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False),
-#         ('KeyEvent', 'ArrowDown', True)]
-# noAction = [('KeyEvent', 'ArrowUp', False), ('KeyEvent', 'ArrowLeft', False), ('KeyEvent', 'ArrowRight', False)]
-ACTIONS = [left, right, Forward, ForwardL, ForwardR]
+ACTIONS = [left, right, Forward]
 nb_actions = len(ACTIONS)
 
 frames = 0
-K.set_learning_phase(1)
 
 def crop_screen(screen):
     # print(screen.shape)
-    # tmp_img = screen[229:NUM_STATE[0], 18:NUM_STATE[1], :]
+    tmp_img =  screen[229:NUM_STATE[0], 18:NUM_STATE[1], :]
 
-    return cv2.resize(screen[229:NUM_STATE[0], 18:NUM_STATE[1], :], (INPUT_IMG[1], INPUT_IMG[0]), interpolation = cv2.INTER_CUBIC)
+    return cv2.resize(tmp_img, (INPUT_IMG[1], INPUT_IMG[0]), interpolation = cv2.INTER_CUBIC)
 
 
 
@@ -99,16 +89,16 @@ class Brain:
 
         x = Conv2D(16, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_1')(l_input)
         print("conv_1", x._keras_shape)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.5)(x)
         x = MaxPool2D((2, 2), strides=(2, 2), name="max_pool_1")(x)
         print("max_pool_1", x._keras_shape)
 
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_2')(x)
         print("conv_2", x._keras_shape)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.5)(x)
         x = Conv2D(32, (3, 3), strides=(2, 2), activation='elu', padding='same', name='conv_3')(x)
         print("conv_3", x._keras_shape)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.5)(x)
         x = Flatten(name='flatten')(x)
         
         # print("b4 flattern", x._keras_shape)
@@ -152,7 +142,6 @@ class Brain:
         return s_t, a_t, r_t, minimize
 
     def optimize(self):
-        # print("self.train_queue[0]",len(self.train_queue[0]))
         if len(self.train_queue[0]) < MINI_BATCH_SIZE :
             # print("len(self.train_queue[0])", len(self.train_queue[0]))
             time.sleep(0)  # yield
@@ -173,7 +162,6 @@ class Brain:
         s_ = np.array(s_)
         s_mask = np.vstack(s_mask)
 
-        print("len(s)",len(s))
         if len(s) > 5 * MINI_BATCH_SIZE:
             print("optimizer alert! with bash size %d" % len(s))
 
@@ -192,11 +180,6 @@ class Brain:
         # print(a)
         # print(r.shape)
         self.session.run(minimize, feed_dict={s_t: s, a_t: a, r_t:r})
-        del s
-        del a
-        del r
-        del s_
-        del s_mask
 
     def train_push(self, s, a, r, s_):
         if s == None:
@@ -260,9 +243,10 @@ class Agent:
         if random.random() < eps:
             return random.randint(0, self.nb_actions -1)
         else:
-            p = brain.predict_p(np.array([s]))[0]
+            s = np.array([s])
+            p = brain.predict_p(s)[0]
+            # print(self.nb_actions, p)
             a = np.random.choice(self.nb_actions, p=p)
-            del p
             return a
 
     def train(self, s, a, r, s_):
@@ -296,7 +280,6 @@ class Agent:
             brain.train_push(s, a, r, s_)
 
             self.R = self.R - self.memory[0][2]
-            # self.memory = []
             self.memory.pop(0)
             # possible edge case - if an episode ends in <N steps, the computation is incorrect
 
@@ -306,24 +289,20 @@ class Environment(threading.Thread):
 
     stop_signal = False
 
-    def __init__(self, render=True, eps_start=EPS_START, eps_end=EPS_STOP, eps_steps=EPS_STEPS, nb_actions=nb_actions):
+    def __init__(self, render=False, eps_start=EPS_START, eps_end=EPS_STOP, eps_steps=EPS_STEPS, nb_actions=nb_actions):
         threading.Thread.__init__(self)
 
         self.render = render
-        self.env = gym.make(ENV)
-        self.env.configure(remotes=1, fps=FPS, start_timeout=15 * 60 )
+        self.env = gym.make(EN
+        self.env.configure(remotes=1)
         self.agent = Agent(eps_start, eps_end, eps_steps, nb_actions)
 
     def runEpisode(self):
         s = self.env.reset()[0]
-        last_frame = NONE_IMG
-        cur_img = NONE_IMG
-        s_ = NONE_IMG
+
         R = 0
         start = time.time()
-        # time.sleep(15)
         while True:
-            # THREAD_DELAY = 15
             time.sleep(THREAD_DELAY)  # yield
 
             if self.render:
@@ -335,20 +314,14 @@ class Environment(threading.Thread):
                 a = 2
             # action_n = [ for ob in s]
             # print(action_n)
-            print([ACTIONS[a]])
             s_, r, done, info = self.env.step([ACTIONS[a]])
-            # del s_
-            # del a
-            # del done
-            # del info
-            # continue
             s_ = s_[0]
             done = done[0]
             if (s_ == None):
                 start = time.time()
                 continue
 
-            if(time.time() - start > 160):
+            if(time.time() -start > 160):
                 done = True
 
             s_ = crop_screen(s_['vision'])
@@ -367,27 +340,15 @@ class Environment(threading.Thread):
                 print("stop signal")
                 break
 
-            cur_img = s_
-
-            if(s_ != None):
-                s_ = np.dstack([last_frame.copy(), cur_img.copy()])
-            
-            self.agent.train(s, a, r[0], s_)
+            self.agent.train(s, a, r[0], np.dstack([s, s_]))
             # print(r, done)
-            del last_frame
 
             s = s_
             R += r[0]
-            last_frame = cur_img
-            gc.collect()
-
 
         with open(LOG_FILE_NAME,'a') as f:
             f.write(str(R)+"\n")
         print("Total R:", R)
-        # n = gc.collect()
-        # del gc.garbage[:]
-
 
     def run(self):
         while not self.stop_signal:
@@ -418,14 +379,13 @@ brain = Brain()  # brain is global in A3C
 # brain.load()
 
 def main():
-    envs = [Environment(render= (i==0)) for i in range(THREADS)]
+    envs = [Environment() for i in range(THREADS)]
     opts = [Optimizer() for i in range(OPTIMIZERS)]
 
     for o in opts:
         o.start()
 
     for e in envs:
-        time.sleep(10)
         e.start()
 
     time.sleep(RUN_TIME)
